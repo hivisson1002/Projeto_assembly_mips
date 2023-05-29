@@ -84,17 +84,17 @@ escolha1: #termo utilizado para indicar o inicio do código da escolha1
 
 escolha2: #termo utilizado para indicar o inicio do código da escolha2
     # Exibir o prompt para digitar o valor de n para calcular o enésimo termo
-    li $v0, 4
-    la $a0, fibonnacci_msg
-    syscall
+    li $v0, 4    # Carregar o valor 4 no registrador $v0 (syscall para impressão de string)
+    la $a0, fibonnacci_msg   # Carregar o endereço da mensagem de entrada para o cálculo do enésimo termo no registrador $a0
+    syscall 
 
     # Ler o valor de n digitado pelo usuário
-    li $v0, 5
+    li $v0, 5      # Carregar o valor 5 no registrador $v0 (syscall para ler um inteiro)
     syscall
     move $a0, $v0   # Armazenar o valor de n em $a0
     
     # Chamando a função fibonacci
-    jal fibonacci
+    jal fibonacci     # Fazer uma chamada de função para a função fibonacci
     move $a1, $v0 # save return value to a1
 
     # Exibir a mensagem com o resultado
@@ -103,8 +103,8 @@ escolha2: #termo utilizado para indicar o inicio do código da escolha2
     syscall
 
     # Exibir o resultado
-    li $v0, 1
-    move $a0, $a1
+    li $v0, 1       # Carregar o valor 1 no registrador $v0 (syscall para imprimir um inteiro)
+    move $a0, $a1   # Mover o valor do enésimo termo em $a1 para $a0
     syscall
 
     #pular linha para reiniciar o menu
@@ -115,26 +115,26 @@ escolha2: #termo utilizado para indicar o inicio do código da escolha2
 
     ## Função fibonacci
     fibonacci:
-    addi $sp, $sp, -12
-    sw $ra, 8($sp)
-    sw $s0, 4($sp)
-    sw $s1, 0($sp)
-    move $s0, $a0
-    li $v0, 1 # return value for terminal condition
-    ble $s0, 0x2, fibonacciSaida # check terminal condition
-    addi $a0, $s0, -1 # set args for recursive call to f(n-1)
-    jal fibonacci
-    move $s1, $v0 # store result of f(n-1) to s1
-    addi $a0, $s0, -2 # set args for recursive call to f(n-2)
-    jal fibonacci
-    add $v0, $s1, $v0 # add result of f(n-1) to it
+    addi $sp, $sp, -12   # Alocar espaço na pilha para salvar registros
+    sw $ra, 8($sp)       # Salvar o endereço de retorno na pilha
+    sw $s0, 4($sp)      # Salvar o registrador $s0 na pilha
+    sw $s1, 0($sp)    # Salvar o registrador $s1 na pilha
+    move $s0, $a0     # Mover o valor de n para o registrador $s0
+    li $v0, 1     # Definir o valor de retorno para a condição de terminação
+    ble $s0, 0x2, fibonacciSaida   # Verificar a condição de terminação
+    addi $a0, $s0, -1 # Definir os argumentos para a chamada recursiva para fibonacci(n-1)
+    jal fibonacci     # Chamada recursiva para fibonacci(n-1)
+    move $s1, $v0    # Armazenar o resultado de f(n-1) em $s1
+    addi $a0, $s0, -2    # Definir os argumentos para a chamada recursiva para fibonacci(n-2)
+    jal fibonacci        # Chamada recursiva para fibonacci(n-2)
+    add $v0, $s1, $v0   # Adicionar o resultado de f(n-1) a ele
     
     fibonacciSaida:
-    lw $ra, 8($sp)
-    lw $s0, 4($sp)
-    lw $s1, 0($sp)
-    addi $sp, $sp, 12
-    jr $ra
+    lw $ra, 8($sp)   # Carregar o valor de retorno (endereço de retorno) da pilha para o registrador $ra
+    lw $s0, 4($sp)   # Carregar o valor de $s0 da pilha para o registrador $s0
+    lw $s1, 0($sp)   # Carregar o valor de $s1 da pilha para o registrador $s1
+    addi $sp, $sp, 12   # Liberar o espaço da pilha reservado para a função
+    jr $ra     # Saltar para o endereço de retorno armazenado em $ra para retornar à função chamadora
 
     
 escolha3: #termo utilizado para indicar o inicio do código da escolha3
@@ -156,19 +156,19 @@ escolha3: #termo utilizado para indicar o inicio do código da escolha3
         beq $t1, $t0, enesimoParSaida
         
         # Incrementar o contador e o enésimo número par
-        addi $t1, $t1, 1
-        addi $t2, $t2, 2
+        addi $t1, $t1, 1    # Incrementar o contador
+        addi $t2, $t2, 2    # Incrementar o enésimo número par
         
-        j enesimoParLoop
+        j enesimoParLoop    # Saltar para enesimoParLoop
     
     enesimoParSaida:
         # Exibir o enésimo número par
-        li $v0, 4
-        la $a0, enesimo_resultado
+        li $v0, 4         # Carregar o valor 4 no registrador $v0 (syscall para impressão de string)
+        la $a0, enesimo_resultado       # Carregar o endereço da mensagem de resultado do enésimo número par no registrador $a0
         syscall
         
-        move $a0, $t2
-        li $v0, 1
+        move $a0, $t2           # Mover o enésimo número par em $t2 para $a0
+        li $v0, 1               # Carregar o valor 1 no registrador $v0 (syscall para imprimir um inteiro)
         syscall
         
         #pular linha para reiniciar o menu
