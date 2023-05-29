@@ -3,7 +3,7 @@
     menu: .asciiz "*****OPÇÕES******\n1. Converte: Fahrenheit -> Celsius\n2. Fibonnnaci\n3. Enésimo Par\n4. Sair\n Escolha uma opção: " #mensagem(string) a ser exibida, insereida na "variavel menu".
     invalido: .asciiz "Opção inválida!\n" #menssagem a ser exibida caso nenhuma das 4 opções seja selecionada.
     fahrenheit_msg: .asciiz "Digite a temperatura em Fahrenheit: "
-    resultado_msg: .asciiz "O resultado em Celsius: "
+    fahrenheit_resultado: .asciiz "O resultado em Celsius: "
     nova_linha: .asciiz "\n"
     Float32: .float 32.0
     Float5: .float 5.0
@@ -43,6 +43,7 @@ main: #termo utilizado para indiciar o menu preincipal.
     #Voltar ao início do programa
     j main
 
+
 escolha1: #termo utilizado para indicar o inicio do código da escolha1
    # Exibir mensagem para digitar a temperatura em Fahrenheit
     li $v0, 4            # Carregar o valor 4 no registrador $v0 (syscall para impressão de string)
@@ -56,7 +57,7 @@ escolha1: #termo utilizado para indicar o inicio do código da escolha1
     
     #exibir mensagem com o resultado
     li $v0, 4            # Carregar o valor 4 no registrador $v0 (syscall para impressão de string)
-    la $a0, resultado_msg   # Carregar o endereço da mensagem de resultado em Celsius no registrador $a0
+    la $a0, fahrenheit_resultado   # Carregar o endereço da mensagem de resultado em Celsius no registrador $a0
     syscall              # Fazer a syscall para imprimir a mensagem
     
     # Converter de Fahrenheit para Celsius 
@@ -80,6 +81,7 @@ escolha1: #termo utilizado para indicar o inicio do código da escolha1
     syscall              # Fazer a syscall para imprimir a nova linha
     j main              #Voltar ao início do programa
 
+
 escolha2: #termo utilizado para indicar o inicio do código da escolha2
     # Exibir o prompt para digitar o valor de n para calcular o enésimo termo
     li $v0, 4
@@ -90,9 +92,10 @@ escolha2: #termo utilizado para indicar o inicio do código da escolha2
     li $v0, 5
     syscall
     move $a0, $v0   # Armazenar o valor de n em $a0
-
-    # Chamar a função fibonacci para calcular o enésimo termo
+    
+    # Chamando a função fibonacci
     jal fibonacci
+    move $a1, $v0 # save return value to a1
 
     # Exibir a mensagem com o resultado
     li $v0, 4
@@ -100,8 +103,8 @@ escolha2: #termo utilizado para indicar o inicio do código da escolha2
     syscall
 
     # Exibir o resultado
-    move $a0, $v0
     li $v0, 1
+    move $a0, $a1
     syscall
 
     #pular linha para reiniciar o menu
@@ -110,34 +113,30 @@ escolha2: #termo utilizado para indicar o inicio do código da escolha2
     syscall              # Fazer a syscall para imprimir a nova linha
     j main              #Voltar ao início do programa
 
-fibonacci:
-    # Verificar se n <= 1
-    blez $a0, fibonacci_base_case
-
-    # Inicializar os primeiros termos da sequência
-    li $t0, 0   # Fibonacci(0)
-    li $t1, 1   # Fibonacci(1)
-
-    # Loop para calcular Fibonacci(n)
-    move $t2, $a0   # Armazenar o valor de n em $t2
-    addi $t2, $t2, -2   # Decrementar n por 2, pois já temos os termos Fibonacci(0) e Fibonacci(1)
+    ## Função fibonacci
+    fibonacci:
+    addi $sp, $sp, -12
+    sw $ra, 8($sp)
+    sw $s0, 4($sp)
+    sw $s1, 0($sp)
+    move $s0, $a0
+    li $v0, 1 # return value for terminal condition
+    ble $s0, 0x2, fibonacciSaida # check terminal condition
+    addi $a0, $s0, -1 # set args for recursive call to f(n-1)
+    jal fibonacci
+    move $s1, $v0 # store result of f(n-1) to s1
+    addi $a0, $s0, -2 # set args for recursive call to f(n-2)
+    jal fibonacci
+    add $v0, $s1, $v0 # add result of f(n-1) to it
     
-fibonacci_loop:
-    add $t3, $t0, $t1   # Fibonacci(n) = Fibonacci(n-1) + Fibonacci(n-2)
-    move $t0, $t1       # Atualizar Fibonacci(n-2)
-    move $t1, $t3       # Atualizar Fibonacci(n-1)
-    addi $t2, $t2, -1   # Decrementar n por 1
-    bnez $t2, fibonacci_loop   # Repetir o loop até que n seja igual a 0
-
-    # Armazenar o resultado em $v0 e retornar
-    move $v0, $t3
+    fibonacciSaida:
+    lw $ra, 8($sp)
+    lw $s0, 4($sp)
+    lw $s1, 0($sp)
+    addi $sp, $sp, 12
     jr $ra
 
-fibonacci_base_case:
-    # Caso base: Fibonacci(0) = 0, Fibonacci(1) = 1
-    move $v0, $a0
-    jr $ra
-
+    
 escolha3: #termo utilizado para indicar o inicio do código da escolha3
     li $v0, 4            # Carregar o valor 4 no registrador $v0 (syscall para impressão de string)
     la $a0, enesimo_msg  # Carregar o endereço da mensagem de entrada em Fahrenheit no registrador $a0
@@ -154,7 +153,7 @@ escolha3: #termo utilizado para indicar o inicio do código da escolha3
     
     enesimoParLoop:
         # Verificar se o contador atingiu o valor de n
-        beq $t1, $t0, enesimoParExit
+        beq $t1, $t0, enesimoParSaida
         
         # Incrementar o contador e o enésimo número par
         addi $t1, $t1, 1
@@ -162,7 +161,7 @@ escolha3: #termo utilizado para indicar o inicio do código da escolha3
         
         j enesimoParLoop
     
-    enesimoParExit:
+    enesimoParSaida:
         # Exibir o enésimo número par
         li $v0, 4
         la $a0, enesimo_resultado
@@ -179,12 +178,11 @@ escolha3: #termo utilizado para indicar o inicio do código da escolha3
         
     	j main              #Voltar ao início do programa
 
+
 sair:#termo utilizado para indicar o código de saida.
     #Encerrar o programa
     li $v0, 10           #atribuir o comando 10 no registrador $v0 (syscall para encerrar o programa)
     syscall              #Fazer a syscall para encerrar o programa
-    
-    
     
     
     
