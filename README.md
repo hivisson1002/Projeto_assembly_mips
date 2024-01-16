@@ -1,4 +1,4 @@
-# Projeto Assembly Mips
+# <p align="center" >  Projeto Assembly Mips </p>
 Projeto em Assembly Mips, para obtenção de nota da disciplina ARGC. O programa tem um menu de opções em que o usuário poderá escolher a ação que deseja.
 * OPÇÕES
   * 1 - Fahrenheit -> Celsius
